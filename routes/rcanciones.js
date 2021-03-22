@@ -16,6 +16,10 @@ module.exports = function(app) {
         res.send(String(respuesta));
     });
 
+    app.get('/promo*', function (req, res) {
+        res.send('Respuesta patrón promo* ');
+    });
+
     app.get('/canciones/:id', function(req, res) {
         let respuesta = 'id: ' + req.params.id;
         res.send(respuesta);
@@ -26,5 +30,10 @@ module.exports = function(app) {
         res.send(respuesta);
     });
 
+    app.post('/cancion', function(req, res) {
+        res.send("Canción agregada:"+req.body.nombre+ '<br>'
+                +"Género:"+req.body.genero+ '<br>'
+            +"Precio:"+req.body.precio);
+    });
 };
 
