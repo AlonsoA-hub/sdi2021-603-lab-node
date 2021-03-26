@@ -25,7 +25,7 @@ module.exports = function(app, swig) {
         });
         res.send(respuesta);
     });
-
+/*
     app.get('/suma', function(req, res) {
         let respuesta = parseInt(req.query.num1) + parseInt(req.query.num2);
         res.send(String(respuesta));
@@ -34,7 +34,7 @@ module.exports = function(app, swig) {
     app.get('/promo*', function (req, res) {
         res.send('Respuesta patrón promo* ');
     });
-
+*/
     app.get('/canciones/:id', function(req, res) {
         let respuesta = 'id: ' + req.params.id;
         res.send(respuesta);
