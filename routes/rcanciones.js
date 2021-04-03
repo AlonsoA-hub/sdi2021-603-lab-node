@@ -39,21 +39,15 @@ module.exports = function(app, swig, gestorBD) {
     });
 
     app.get('/canciones/agregar', function (req, res) {
-        let respuesta = swig.renderFile('views/bagregar.html', {
+        if ( req.session.usuario == null){
+            res.redirect("/tienda");
+            return;
+        }
 
-        });
+        let respuesta = swig.renderFile('views/bagregar.html', {});
         res.send(respuesta);
     });
-/*
-    app.get('/suma', function(req, res) {
-        let respuesta = parseInt(req.query.num1) + parseInt(req.query.num2);
-        res.send(String(respuesta));
-    });
 
-    app.get('/promo*', function (req, res) {
-        res.send('Respuesta patrón promo* ');
-    });
-*/
     app.get('/cancion/:id', function(req, res) {
         let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
 
@@ -76,10 +70,16 @@ module.exports = function(app, swig, gestorBD) {
     });
 
     app.post('/cancion', function(req, res) {
+        if ( req.session.usuario == null){
+            res.redirect("/tienda");
+            return;
+        }
+
         let cancion = {
             nombre : req.body.nombre,
             genero : req.body.genero,
-            precio : req.body.precio
+            precio : req.body.precio,
+            autor: req.session.usuario
         }
         // Conectarse
         gestorBD.insertarCancion(cancion, function(id){
