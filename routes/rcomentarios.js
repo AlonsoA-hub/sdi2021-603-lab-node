@@ -21,5 +21,31 @@ module.exports = function(app, swig, gestorBD) {
             }
         });
     });
+
+    app.get("/comentario/eliminar/:id", function (req,res){
+        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
+
+        var usuario = req.session.usuario;
+
+        if(usuario == null){
+            res.send("Error usuario no autentificado");
+            return;
+        }
+
+        gestorBD.obtenerComentarios(criterio, function (comentario){
+            if ( usuario != comentario[0].autor ){
+                res.send("No se pueden borrar comentarios ajenos");
+            } else {
+                gestorBD.eliminarComentario(comentario[0], function (aux){
+                    if(aux == null){
+                        res.send("Error al borrar comentario");
+                    } else {
+                        res.redirect("/tienda");
+                    }
+                })
+            }
+        })
+
+    });
 };
 
