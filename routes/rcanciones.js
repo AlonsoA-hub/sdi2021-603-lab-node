@@ -93,27 +93,32 @@ module.exports = function(app, swig, gestorBD) {
     app.get('/cancion/:id', function(req, res) {
         let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
 
-        gestorBD.obtenerCanciones(criterio,function(canciones){
-            if ( canciones == null ){
-                res.send("Error al recuperar la canción.");
-            } else {
-                var cancion = canciones[0];
-                criterio = { "cancion_id" : gestorBD.mongo.ObjectID(cancion._id) };
+        usuarioPuedeComprarCancion(req.session.usuario,gestorBD.mongo.ObjectID(req.params.id), function (puedeComprar){
+            gestorBD.obtenerCanciones(criterio,function(canciones){
+                if ( canciones == null ){
+                    res.send("Error al recuperar la canción.");
+                } else {
+                    var cancion = canciones[0];
+                    criterio = { "cancion_id" : gestorBD.mongo.ObjectID(cancion._id) };
 
-                gestorBD.obtenerComentarios(criterio,function(comentarios){
-                    if ( comentarios == null ){
-                        res.send("Error al recuperar comentarios.");
-                    } else {
-                        let respuesta = swig.renderFile('views/bcancion.html',
-                            {
-                                cancion : cancion,
-                                comentarios : comentarios
-                            });
-                        res.send(respuesta);
-                    }
-                });
-            }
+                    gestorBD.obtenerComentarios(criterio,function(comentarios){
+                        if ( comentarios == null ){
+                            res.send("Error al recuperar comentarios.");
+                        } else {
+                            let respuesta = swig.renderFile('views/bcancion.html',
+                                {
+                                    cancion : cancion,
+                                    comentarios : comentarios,
+                                    puedeComprar : puedeComprar
+                                });
+                            res.send(respuesta);
+                        }
+                    });
+                }
+            });
         });
+
+
     });
     app.get('/canciones/:genero/:id', function(req, res) {
         let respuesta = 'id: ' + req.params.id + '<br>'
@@ -238,13 +243,22 @@ module.exports = function(app, swig, gestorBD) {
             usuario : req.session.usuario,
             cancionId : cancionId
         }
-        gestorBD.insertarCompra(compra ,function(idCompra){
-            if ( idCompra == null ){
-                res.send(respuesta);
+
+        usuarioPuedeComprarCancion(compra.usuario, cancionId, function (comprar){
+            if(comprar){
+                gestorBD.insertarCompra(compra ,function(idCompra){
+                    if ( idCompra == null ){
+                        res.send(respuesta);
+                    } else {
+                        res.redirect("/compras");
+                    }
+                });
             } else {
-                res.redirect("/compras");
+                next(new Error('Error al comprar la canción o ya la tiene comprada'));
             }
         });
+
+
     });
     app.get('/compras', function (req,res){
         let criterio = {"usuario" : req.session.usuario};
@@ -267,6 +281,25 @@ module.exports = function(app, swig, gestorBD) {
                 })
             }
         })
-    })
+    });
+
+    function usuarioPuedeComprarCancion(usuario, cancionId, functionCallback){
+        let criterio_ser_autor = {$and: [{"_id" : cancionId}, {"autor" : usuario}]};
+        let criterio_comprada = {$and: [{"cancionId" : cancionId}, {"usuario" : usuario}]};
+
+        gestorBD.obtenerCanciones(criterio_ser_autor, function (canciones){
+            if(canciones == null || canciones.length > 0){
+                functionCallback(false);
+            } else {
+                gestorBD.obtenerCompras(criterio_comprada, function (compras){
+                    if(compras == null || compras.length > 0){
+                        functionCallback(false);
+                    } else {
+                        functionCallback(true);
+                    }
+                });
+            }
+        });
+    }
 };
 
