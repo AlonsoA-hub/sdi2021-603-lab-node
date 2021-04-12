@@ -3,7 +3,10 @@ module.exports = function(app, swig, gestorBD) {
         var usuario = req.session.usuario;
 
         if(usuario == null){
-            res.send("Error usuario no autentificado");
+            let respuesta = swig.renderFile('views/error.html',{
+                texto : 'Error usuario no identificado.'
+            });
+            res.send(respuesta);
             return;
         }
 
@@ -15,7 +18,10 @@ module.exports = function(app, swig, gestorBD) {
 
         gestorBD.insertarComentario(comentario, function(id){
             if (id == null) {
-                res.send("Error al insertar comentario");
+                let respuesta = swig.renderFile('views/error.html',{
+                    texto : 'Error al insertar comentario.'
+                });
+                res.send(respuesta);
             } else {
                 res.send("Agregado comentario: "+ id);
             }
@@ -28,7 +34,10 @@ module.exports = function(app, swig, gestorBD) {
         var usuario = req.session.usuario;
 
         if(usuario == null){
-            res.send("Error usuario no autentificado");
+            let respuesta = swig.renderFile('views/error.html',{
+                texto : 'Error usuario no identificado.'
+            });
+            res.send(respuesta);
             return;
         }
 
@@ -38,7 +47,10 @@ module.exports = function(app, swig, gestorBD) {
             } else {
                 gestorBD.eliminarComentario(comentario[0], function (aux){
                     if(aux == null){
-                        res.send("Error al borrar comentario");
+                        let respuesta = swig.renderFile('views/error.html',{
+                            texto : 'Error al borrar comentario.'
+                        });
+                        res.send(respuesta);
                     } else {
                         res.redirect("/tienda");
                     }
