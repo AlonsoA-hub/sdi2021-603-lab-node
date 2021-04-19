@@ -44,7 +44,12 @@
 
             },
             error : function (error){
-                $( "#contenedor-principal" ).load("widget-login.html");
+                console.log(error);
+                $("div").remove(".alert");
+                for(i = 0; i< error.responseJSON.error.length; i++){
+                    $("#widget-agregar").prepend("<div class='alert alert-danger'>"+error.responseJSON.error[i]+"</div>");
+                }
+
             }
         });
     }
